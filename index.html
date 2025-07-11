@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sunverter</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#007a5e">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #1e1e1e;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    input {
+      padding: 0.5rem;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      width: 80%;
+      border-radius: 10px;
+      border: none;
+      text-align: center;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007a5e;
+      color: white;
+    }
+    .output {
+      margin-top: 1rem;
+      font-size: 1.5rem;
+    }
+    .flags {
+      font-size: 2rem;
+      margin: 0 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><span class="flags">🇺🇸</span> USD to THB Converter <span class="flags">🇹🇭</span></h1>
+    <p>Live Exchange Rate</p>
+    <input type="number" id="usd" placeholder="Enter USD amount" value="1" />
+    <br />
+    <button onclick="convert()">Convert</button>
+    <button onclick="swapCurrencies()">Swap</button>
+    <div class="output" id="thbOutput">THB: </div>
+    <p style="font-size: 0.8rem;">1 <span id="fromSymbol">$</span> = <span id="rate"></span> <span id="toSymbol">฿</span> (live)</p>
+  </div>
+
+  <script>
+    let isUSDtoTHB = true;
+
+    async function getExchangeRate() {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await res.json();
+        return data.rates.THB;
+      } catch (err) {
+        console.error("Error fetching exchange rate", err);
+        return 0;
+      }
+    }
+
+    async function convert() {
+      const amount = parseFloat(document.getElementById("usd").value);
+      const rate = await getExchangeRate();
+      const result = isUSDtoTHB ? (amount * rate) : (amount / rate);
+      document.getElementById("thbOutput").innerText = (isUSDtoTHB ? "THB: ฿" : "USD: $") + result.toFixed(2);
+      document.getElementById("rate").innerText = isUSDtoTHB ? rate.toFixed(2) : (1 / rate).toFixed(4);
+    }
+
+    function swapCurrencies() {
+      isUSDtoTHB = !isUSDtoTHB;
+      document.querySelector("h1").innerHTML = isUSDtoTHB
+        ? '<span class="flags">🇺🇸</span> USD to THB Converter <span class="flags">🇹🇭</span>'
+        : '<span class="flags">🇹🇭</span> THB to USD Converter <span class="flags">🇺🇸</span>';
+      document.getElementById("fromSymbol").innerText = isUSDtoTHB ? "$" : "฿";
+      document.getElementById("toSymbol").innerText = isUSDtoTHB ? "฿" : "$";
+      convert();
+    }
+
+    convert(); // Run on page load
+  </script>
+</body>
+</html>
